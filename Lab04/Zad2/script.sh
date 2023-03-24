@@ -2,30 +2,16 @@
 
 docker volume create nodejs_data
 
+docker volume create nginx_data
+
 docker run -d \
   --name lab04zad2 \
   -v nodejs_data:/app \
-  node:latest
+  node:latest \
+  sh -c "echo 'Hello World'  > /app/index.html"
 
 docker volume create all_volumes
 
-docker volume create nginx_data
+docker container run --rm -it -v nginx_data:/usr/share/nginx/html -v all_volumes:/all_volumes busybox sh -c "cp -a /usr/share/nginx/html/. /all_volumes"
 
-mkdir \\\\wsl$\\docker-desktop-data\\data\\docker\\volumes\\nginx_data\\_data\\usr
-
-mkdir \\\\wsl$\\docker-desktop-data\\data\\docker\\volumes\\nginx_data\\_data\\usr\\share
-
-mkdir \\\\wsl$\\docker-desktop-data\\data\\docker\\volumes\\nginx_data\\_data\\usr\\share\\nginx
-
-mkdir \\\\wsl$\\docker-desktop-data\\data\\docker\\volumes\\nginx_data\\_data\\usr\\share\\nginx\\html
-
-touch \\\\wsl$\\docker-desktop-data\\data\\docker\\volumes\\nginx_data\\_data\\usr\\share\\nginx\\html\\index.html
-
-echo "Hello World" > \\\\wsl$\\docker-desktop-data\\data\\docker\\volumes\\nginx_data\\_data\\usr\\share\\nginx\\html\\index.html
-
-cp -r \\\\wsl$\\docker-desktop-data\\data\\docker\\volumes\\nginx_data\\_data\\usr\\share\\nginx\\html\\ \\\\wsl$\\docker-desktop-data\\data\\docker\\volumes\\all_volumes\\_data
-
-docker cp lab04zad2:/app \\\\wsl$\\docker-desktop-data\\data\\docker\\volumes\\all_volumes\\_data\\
-
-
-
+docker container run --rm -it -v nodejs_data:/app -v all_volumes:/all_volumes busybox sh -c "cp -a app/. /all_volumes"
