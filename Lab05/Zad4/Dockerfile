@@ -27,8 +27,6 @@ RUN cd /opt/Python-${PYTHON_VERSION} \
 WORKDIR /app
 COPY ./app .
 
-VOLUME ["/app/data"]
-
 EXPOSE ${SERVER_PORT}
 
 CMD ["python3", "app.py"]
