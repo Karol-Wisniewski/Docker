@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  frontend:
+    restart: always
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    networks:
+      - frontend_network
+    ports:
+      - "80:3000"
+
+  backend:
+    restart: always
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: backend
+    networks:
+      - frontend_network
+      - backend_network
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=people
+      - POSTGRES_HOST=database
+      - POSTGRES_PORT=5432
+    ports:
+      - "4000:4000"
+    depends_on:
+      - database
+
+  database:
+    restart: always
+    build:
+      context: ./database
+      dockerfile: Dockerfile
+    container_name: database
+    networks:
+      - backend_network
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=people
+      - POSTGRES_HOST=database
+      - POSTGRES_PORT=5432
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+
+networks:
+  frontend_network:
+  backend_network:
