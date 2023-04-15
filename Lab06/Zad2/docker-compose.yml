@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  web:
+    build: ./web
+    ports:
+      - "80:3000"
+    depends_on:
+      - db
+    networks:
+      - my_network
+
+  db:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: mysecretpassword
+      MYSQL_DATABASE: my_database
+    networks:
+      - my_network
+    ports: 
+      - "3306:3306"
+networks:
+  my_network:
