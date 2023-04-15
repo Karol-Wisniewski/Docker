@@ -1,13 +1,19 @@
-FROM node:14
+FROM nginx
+
+COPY ./default.conf /etc/nginx/conf.d/default.conf
+
+RUN apt update
+
+RUN apt install curl -y
+
+RUN curl -fsSL https://deb.nodesource.com/setup_19.x | bash - && apt-get install -y nodejs
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY package*.json .
 
-RUN npm install
+COPY app.js .
 
-COPY . .
+RUN npm i
 
-EXPOSE 3000
-
-CMD ["npm", "start"]
+CMD ["node", "app.js"]
