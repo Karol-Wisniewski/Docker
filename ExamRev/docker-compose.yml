@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  app:
+    container_name: app
+    build:
+      dockerfile: ./Dockerfile
+      args:
+        GIT_REPO: https://github.com/szymon-kalkowski/tenzies.git
+    ports:
+      - 80:80
+    networks:
+      - app-network
+
+networks:
+  app-network:
+
