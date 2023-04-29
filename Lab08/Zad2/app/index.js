@@ -1,6 +1,5 @@
 const express = require('express');
 const Redis = require('ioredis');
-const { promisify } = require('util');
 
 const app = express();
 app.use(express.json());
