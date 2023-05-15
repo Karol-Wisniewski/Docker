@@ -1,0 +1,27 @@
+version: '3'
+services:
+  app:
+    build: ./api
+    ports:
+      - "3000:3000"
+    links:
+      - db
+      - cache
+    environment:
+      - DATABASE_URL=mongodb://db:27017/mydatabase
+      - REDIS_URL=redis://cache:6379
+    depends_on:
+      - db
+      - cache
+  db:
+    image: mongo:latest
+    volumes:
+      - mongo_data:/data/db
+  cache:
+    image: redis:latest
+    volumes:
+      - redis_data:/data
+
+volumes:
+  mongo_data:
+  redis_data:
