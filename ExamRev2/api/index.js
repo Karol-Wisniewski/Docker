@@ -8,34 +8,15 @@ app.use(bodyParser.json());
 
 // Połącz z MongoDB
 const db = mongoose.connection;
-mongoose.connect(process.env.DATABASE_URL, { useNewUrlParser: true, useUnifiedTopology: true });
+
 db.on('error', (error) => console.error(error));
 db.once('open', () => console.log('Connected to database'));
 
 // Połącz z Redis
-const redisClient = redis.createClient({
-    url: process.env.REDIS_URL,
-    retry_strategy: function(options) {
-        if (options.error && options.error.code === "ECONNREFUSED") {
-        // End reconnecting on a specific error and flush all commands with
-        // a individual error
-        return new Error("The server refused the connection");
-        }
-        if (options.total_retry_time > 1000 * 60 * 60) {
-        // End reconnecting after a specific timeout and flush all commands
-        // with a individual error
-        return new Error("Retry time exhausted");
-        }
-        if (options.attempt > 10) {
-        // End reconnecting with built in error
-        return undefined;
-        }
-        // reconnect after
-        return Math.min(options.attempt * 100, 3000);
-    },
-});
+const redisClient = redis.createClient({url: process.env.REDIS_URL,});
 redisClient.on('connect', () => console.log('Connected to Redis'));
 redisClient.on('error', (error) => console.error('Error connecting to Redis:', error));
+redisClient.on('end', () => console.log('Disconnected from Redis'));
 
 // Zdefiniuj schemat zadania
 const taskSchema = new mongoose.Schema({
@@ -62,11 +43,10 @@ app.post('/tasks', async (req, res) => {
 
 app.put('/tasks/:id', async (req, res) => {
     try {
-        const task = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        redisClient.incr('updatedTasks', (err, count) => {
-        if (err) res.status(500).json({ error: err.message });
-        else res.json({ task, updatedTasksCount: count });
-    });
+      
+      const task = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true });
+      const count = await redisClient.incr('updatedTasks')
+      res.json({ task, updatedTasksCount: count });   
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -77,4 +57,10 @@ app.delete('/tasks/:id', async (req, res) => {
     res.status(204).send();
 });
 
-app.listen(3000, () => console.log('Server started on port 3000'));
+const connectToMongo = async () => {
+  await mongoose.connect(process.env.DATABASE_URL, { useNewUrlParser: true, useUnifiedTopology: true })
+};
+
+Promise.all([redisClient.connect(), connectToMongo()]).then(() => {
+  app.listen(3000, () => console.log('Server started on port 3000'));
+});
